@@ -22,6 +22,8 @@ import android.widget.SeekBar.OnSeekBarChangeListener
 import android.R.attr.track
 import java.util.Collections.frequency
 import android.R.attr.start
+import android.widget.Button
+import android.widget.TextView
 import kotlin.math.atan
 import kotlin.math.roundToInt
 
@@ -29,11 +31,14 @@ import kotlin.math.roundToInt
 class MainActivity : AppCompatActivity() {
 
     private var frequencyBar: SeekBar? = null
+    private var frequencyLabel: TextView? = null
+    private var button: Button? = null
     // --- variables for the sound synthesis ---
     var t: Thread? = null
     var isRunning = false
     val sr = 44100                   // maximum frequency
-    val twopi = 8.0 * atan(1.0)      // atan(1) is Pi/4
+    //val twopi = 8.0 * atan(1.0)      // atan(1) is Pi/4
+    val twopi = 2 * Math.PI
     var amp = 10000                        // amplitude
     var fr = 440.0                      // frequency
     var ph = 0.0                        // phase
@@ -57,6 +62,8 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
         frequencyBar = findViewById(R.id.seekBar)
+        frequencyLabel = findViewById(R.id.textView)
+        button = findViewById(R.id.playPause)
         frequencyBar!!.setOnSeekBarChangeListener(object : OnSeekBarChangeListener {
 
             override fun onStopTrackingTouch(seekBar: SeekBar) {}
@@ -64,6 +71,7 @@ class MainActivity : AppCompatActivity() {
 
             override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
                 fr = progress * 1.0
+                frequencyLabel!!.text = progress.toString() + " Hz"
             }
         })
     }
@@ -87,9 +95,11 @@ class MainActivity : AppCompatActivity() {
     fun onPlayPauseTap(view: View) {
         if (!isRunning) {
             isRunning = true
+            button!!.text = "Pause"
             play()
         } else {
             isRunning = false
+            button!!.text = "Play"
         }
     }
 

@@ -19,8 +19,20 @@
             android:layout_marginStart="16dp"
             app:layout_constraintEnd_toEndOf="parent"
             android:layout_marginEnd="16dp"
-            android:max="1400"
+            android:max="14000"
             android:progress="440"/>
+
+    <TextView
+            android:text="440 Hz"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/textView"
+            app:layout_constraintTop_toBottomOf="@+id/seekBar"
+            android:layout_marginTop="16dp"
+            app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginStart="16dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginEnd="16dp"/>
 
     <Button
             android:text="@string/playPause"
@@ -28,10 +40,11 @@
             android:layout_height="wrap_content"
             android:onClick="onPlayPauseTap"
             android:id="@+id/playPause"
-            android:layout_marginTop="16dp"
-            app:layout_constraintTop_toBottomOf="@+id/seekBar"
+            app:layout_constraintTop_toBottomOf="@+id/textView"
             app:layout_constraintStart_toStartOf="parent"
             android:layout_marginStart="16dp"
             app:layout_constraintEnd_toEndOf="parent"
-            android:layout_marginEnd="16dp"/>
+            android:layout_marginEnd="16dp"
+            android:layout_marginTop="16dp"/>
+
 </android.support.constraint.ConstraintLayout>
