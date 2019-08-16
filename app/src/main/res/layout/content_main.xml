@@ -19,7 +19,7 @@
             android:layout_marginStart="16dp"
             app:layout_constraintEnd_toEndOf="parent"
             android:layout_marginEnd="16dp"
-            android:max="14000"
+            android:max="1000"
             android:progress="440"/>
 
     <TextView

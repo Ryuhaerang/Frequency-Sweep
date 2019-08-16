@@ -16,7 +16,6 @@ import android.os.Handler
 import android.provider.MediaStore
 import android.widget.SeekBar
 import kotlin.experimental.and
-import kotlin.math.sin
 import android.widget.Toast
 import android.widget.SeekBar.OnSeekBarChangeListener
 import android.R.attr.track
@@ -24,8 +23,7 @@ import java.util.Collections.frequency
 import android.R.attr.start
 import android.widget.Button
 import android.widget.TextView
-import kotlin.math.atan
-import kotlin.math.roundToInt
+import kotlin.math.*
 
 
 class MainActivity : AppCompatActivity() {
@@ -70,8 +68,20 @@ class MainActivity : AppCompatActivity() {
             override fun onStartTrackingTouch(seekBar: SeekBar) {}
 
             override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
-                fr = progress * 1.0
-                frequencyLabel!!.text = progress.toString() + " Hz"
+                // position will be between 0 and 100
+                val minp = 0
+                val maxp = 1000
+
+                // The result should be between 100 an 10000000
+                val minv = ln(30.0)
+                val maxv = ln(18000.0)
+
+                // calculate adjustment factor
+                val scale = (maxv-minv) / (maxp-minp)
+
+                fr = exp(minv + scale * (progress-minp))
+
+                frequencyLabel!!.text = floor(fr).toInt().toString() + " Hz"
             }
         })
     }
