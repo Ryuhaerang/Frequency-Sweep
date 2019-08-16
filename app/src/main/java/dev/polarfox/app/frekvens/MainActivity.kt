@@ -24,12 +24,17 @@ import android.R.attr.start
 import android.widget.Button
 import android.widget.TextView
 import kotlin.math.*
+import android.text.InputFilter
+import android.widget.EditText
+import dev.polarfox.app.frekvens.R
+
 
 
 class MainActivity : AppCompatActivity() {
 
     private var frequencyBar: SeekBar? = null
     private var frequencyLabel: TextView? = null
+    private var valueGoal: EditText? = null
     private var button: Button? = null
     // --- variables for the sound synthesis ---
     var t: Thread? = null
@@ -62,7 +67,9 @@ class MainActivity : AppCompatActivity() {
         frequencyBar = findViewById(R.id.seekBar)
         frequencyLabel = findViewById(R.id.textView)
         button = findViewById(R.id.playPause)
-        frequencyBar!!.setOnSeekBarChangeListener(object : OnSeekBarChangeListener {
+        valueGoal = findViewById(R.id.goalText)
+        valueGoal?.filters = arrayOf<InputFilter>(InputFilterMinMax("1", "18000"))
+        frequencyBar?.setOnSeekBarChangeListener(object : OnSeekBarChangeListener {
 
             override fun onStopTrackingTouch(seekBar: SeekBar) {}
             override fun onStartTrackingTouch(seekBar: SeekBar) {}
