@@ -36,11 +36,17 @@ class MainActivity : AppCompatActivity() {
     private var frequencyLabel: TextView? = null
     private var valueGoal: EditText? = null
     private var button: Button? = null
+    // --- variables for logarithmic slider ---
+    // position will be between 0 and 100
+    val minp = 0
+    val maxp = 1000
+    // The result should be between 100 an 10000000
+    val minv = ln(30.0)
+    val maxv = ln(18000.0)
     // --- variables for the sound synthesis ---
     var t: Thread? = null
     var isRunning = false
     val sr = 44100                   // maximum frequency
-    //val twopi = 8.0 * atan(1.0)      // atan(1) is Pi/4
     val twopi = 2 * Math.PI
     var amp = 10000                        // amplitude
     var fr = 440.0                      // frequency
@@ -75,20 +81,13 @@ class MainActivity : AppCompatActivity() {
             override fun onStartTrackingTouch(seekBar: SeekBar) {}
 
             override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
-                // position will be between 0 and 100
-                val minp = 0
-                val maxp = 1000
-
-                // The result should be between 100 an 10000000
-                val minv = ln(30.0)
-                val maxv = ln(18000.0)
 
                 // calculate adjustment factor
                 val scale = (maxv-minv) / (maxp-minp)
 
                 fr = exp(minv + scale * (progress-minp))
 
-                frequencyLabel!!.text = floor(fr).toInt().toString() + " Hz"
+                frequencyLabel?.text = floor(fr).toInt().toString() + " Hz"
             }
         })
     }
@@ -109,14 +108,24 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    fun onSetTap(view: View) {
+        val value = Integer.valueOf(this.valueGoal?.text.toString())
+        if (value in 30..18000) {
+            val scale = (maxv-minv) / (maxp-minp)
+            frequencyBar?.progress = round((ln(value * 1.0)-minv) / scale + minp).toInt();
+            this.fr = value * 1.0
+            frequencyLabel?.text = fr.toInt().toString() + " Hz"
+        }
+    }
+
     fun onPlayPauseTap(view: View) {
         if (!isRunning) {
             isRunning = true
-            button!!.text = "Pause"
+            button?.text = "Pause"
             play()
         } else {
             isRunning = false
-            button!!.text = "Play"
+            button?.text = "Play"
         }
     }
 
@@ -154,7 +163,7 @@ class MainActivity : AppCompatActivity() {
                 audioTrack.write(samples, 0, buffsize)
             }
         }
-        t!!.start()
+        t?.start()
     }
 
 }
