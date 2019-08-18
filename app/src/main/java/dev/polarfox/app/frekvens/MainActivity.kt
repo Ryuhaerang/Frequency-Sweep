@@ -14,21 +14,16 @@ import android.media.AudioManager
 import android.media.session.PlaybackState
 import android.os.Handler
 import android.provider.MediaStore
-import android.widget.SeekBar
 import kotlin.experimental.and
-import android.widget.Toast
 import android.widget.SeekBar.OnSeekBarChangeListener
 import android.R.attr.track
 import java.util.Collections.frequency
 import android.R.attr.start
-import android.widget.Button
-import android.widget.TextView
 import kotlin.math.*
 import android.text.InputFilter
-import android.widget.EditText
+import android.widget.*
 import dev.polarfox.app.frekvens.R
-
-
+import android.widget.CompoundButton
 
 class MainActivity : AppCompatActivity() {
 
@@ -36,6 +31,7 @@ class MainActivity : AppCompatActivity() {
     private var frequencyLabel: TextView? = null
     private var valueGoal: EditText? = null
     private var button: Button? = null
+    private var modeSwitch: Switch? = null
     // --- variables for logarithmic slider ---
     // position will be between 0 and 100
     val minp = 0
@@ -44,6 +40,7 @@ class MainActivity : AppCompatActivity() {
     val minv = ln(30.0)
     val maxv = ln(18000.0)
     // --- variables for the sound synthesis ---
+    var sawMode = false
     var t: Thread? = null
     var isRunning = false
     val sr = 44100                   // maximum frequency
@@ -90,6 +87,10 @@ class MainActivity : AppCompatActivity() {
                 frequencyLabel?.text = floor(fr).toInt().toString() + " Hz"
             }
         })
+        modeSwitch = findViewById(R.id.modeSwitch)
+        modeSwitch?.setOnCheckedChangeListener { _, isChecked ->
+            this.sawMode = isChecked
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -166,11 +167,18 @@ class MainActivity : AppCompatActivity() {
             fun fillblock() {
                 for (i in 0 until buffsize) {
 
-                    val saw = (amp * (ph % (sr / fr)) / (sr / fr) - 1).toShort()
-                    val sine = (amp * sin(ph)).toShort()
-                    val mixed = (mix * saw + (1 - mix) * sine).roundToInt().toShort()
+                    if (sawMode) {
+                        // sawtooth wave
+                        val saw1 = (amp * sin(ph)).toShort()
+                        val saw2 = (saw1 - 0.5 * amp * sin(2*ph)).toShort()
+                        val saw3 = (saw2 - (1/3.0) * amp * sin(3*ph)).toShort()
+                        val saw4 = (saw3 - (1/4.0) * amp * sin(4*ph)).toShort()
+                        samples[i] = saw4
+                    } else {
+                        // sine wave
+                        samples[i] = (amp * sin(ph)).toShort()
+                    }
 
-                    samples[i] = sine
                     ph += twopi * fr / sr
 
                 }
