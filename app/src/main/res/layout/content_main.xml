@@ -22,17 +22,45 @@
             android:max="1000"
             android:progress="440"/>
 
-    <TextView
-            android:text="440 Hz"
+
+    <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/textView"
+            android:id="@+id/hertzBox"
             app:layout_constraintTop_toBottomOf="@+id/seekBar"
             android:layout_marginTop="16dp"
             app:layout_constraintStart_toStartOf="parent"
             android:layout_marginStart="16dp"
             app:layout_constraintEnd_toEndOf="parent"
-            android:layout_marginEnd="16dp"/>
+            android:layout_marginEnd="16dp">
+
+        <Button
+                android:text="-"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:id="@+id/downButton"
+                android:onClick="onDown"
+                android:layout_marginEnd="10dp"
+                android:layout_weight="1"/>
+
+        <TextView
+                android:text="440 Hz"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="10dp"
+                android:id="@+id/textView"/>
+
+        <Button
+                android:text="+"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:id="@+id/upButton"
+                android:onClick="onUp"
+                android:layout_weight="1"
+                />
+
+    </LinearLayout>
+
 
     <Button
             android:text="@string/playPause"
@@ -40,7 +68,7 @@
             android:layout_height="wrap_content"
             android:onClick="onPlayPauseTap"
             android:id="@+id/playPause"
-            app:layout_constraintTop_toBottomOf="@+id/textView"
+            app:layout_constraintTop_toBottomOf="@+id/hertzBox"
             app:layout_constraintStart_toStartOf="parent"
             android:layout_marginStart="16dp"
             app:layout_constraintEnd_toEndOf="parent"

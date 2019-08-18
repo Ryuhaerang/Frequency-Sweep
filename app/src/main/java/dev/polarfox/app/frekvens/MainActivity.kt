@@ -83,9 +83,9 @@ class MainActivity : AppCompatActivity() {
             override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
 
                 // calculate adjustment factor
-                val scale = (maxv-minv) / (maxp-minp)
+                val scale = (maxv - minv) / (maxp - minp)
 
-                fr = exp(minv + scale * (progress-minp))
+                fr = exp(minv + scale * (progress - minp))
 
                 frequencyLabel?.text = floor(fr).toInt().toString() + " Hz"
             }
@@ -108,14 +108,28 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    fun onSetTap(view: View) {
-        val value = Integer.valueOf(this.valueGoal?.text.toString())
+    fun onDown(view: View) {
+        val value = floor(this.fr).toInt() - 1;
+        setValue(value)
+    }
+
+    fun onUp(view: View) {
+        val value = floor(this.fr).toInt() + 1;
+        setValue(value)
+    }
+
+    fun setValue(value: Int) {
         if (value in 30..18000) {
             val scale = (maxv-minv) / (maxp-minp)
             frequencyBar?.progress = round((ln(value * 1.0)-minv) / scale + minp).toInt();
             this.fr = value * 1.0
             frequencyLabel?.text = fr.toInt().toString() + " Hz"
         }
+    }
+
+    fun onSetTap(view: View) {
+        val value = Integer.valueOf(this.valueGoal?.text.toString())
+        this.setValue(value)
     }
 
     fun onPlayPauseTap(view: View) {
