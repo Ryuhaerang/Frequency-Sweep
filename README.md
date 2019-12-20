@@ -1,2 +1,1 @@
-# Frekvens
-Open Source Frequency Generator for Android
+# Frequency Sweep
