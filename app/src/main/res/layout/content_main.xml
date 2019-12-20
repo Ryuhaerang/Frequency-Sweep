@@ -97,6 +97,7 @@
                 android:layout_weight="1"
                 android:width="100dp"
                 android:text="30"
+                android:visibility="gone"
                 android:layout_marginEnd="10dp"/>
 
         <TextView
@@ -105,11 +106,13 @@
                 android:layout_height="wrap_content"
                 android:id="@+id/textView3"
                 android:layout_weight="1"
+                android:visibility="gone"
                 android:layout_marginEnd="10dp"
                 />
 
         <Button
                 android:text="Set"
+                android:visibility="gone"
                 android:onClick="onSetTap"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -119,6 +122,7 @@
 
     <LinearLayout
             android:id="@+id/modeBox"
+            android:visibility="gone"
             android:orientation="horizontal"
             android:layout_width="wrap_content"
             android:layout_height="0dp"

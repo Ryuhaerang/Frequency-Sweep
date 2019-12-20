@@ -19,11 +19,23 @@ import android.widget.SeekBar.OnSeekBarChangeListener
 import android.R.attr.track
 import java.util.Collections.frequency
 import android.R.attr.start
+import android.content.pm.PackageManager
+import android.support.v4.content.ContextCompat
+import android.support.v4.app.ActivityCompat
 import kotlin.math.*
 import android.text.InputFilter
 import android.widget.*
 import dev.polarfox.app.frekvens.R
 import android.widget.CompoundButton
+import android.util.Log
+
+import android.Manifest
+import android.media.MediaRecorder
+import android.os.Environment
+import java.io.IOException
+import java.util.Timer
+import java.util.TimerTask
+import kotlin.concurrent.schedule
 
 class MainActivity : AppCompatActivity() {
 
@@ -46,15 +58,19 @@ class MainActivity : AppCompatActivity() {
     val sr = 44100                   // maximum frequency
     val twopi = 2 * Math.PI
     var amp = 10000                        // amplitude
-    var fr = 440.0                      // frequency
+    var fr = 10000.0                      // frequency
     var ph = 0.0                        // phase
     var mix = 0f
-    var buffsize = AudioTrack.getMinBufferSize(
-        sr, AudioFormat.CHANNEL_OUT_MONO,
-        AudioFormat.ENCODING_PCM_16BIT
-    )
+
+//    var buffsize = AudioTrack.getMinBufferSize(
+//        sr, AudioFormat.CHANNEL_OUT_MONO,
+//        AudioFormat.ENCODING_PCM_16BIT
+//    )
+    var buffsize = 64
+
     var samples = ShortArray(buffsize)
     // create an audiotrack object
+    // <init>(streamType: Int, sampleRateInHz: Int, channelConfig: Int, audioFormat: Int, bufferSizeInBytes: Int, mode: Int)
     var audioTrack = AudioTrack(
         AudioManager.STREAM_MUSIC, sr,
         AudioFormat.CHANNEL_OUT_MONO,
@@ -63,10 +79,26 @@ class MainActivity : AppCompatActivity() {
         AudioTrack.MODE_STREAM
     )
 
+    /* Recorder */
+    private var output: String? = null
+    private var mediaRecorder: MediaRecorder? = null
+    private var state: Boolean = false
+    private var recordingStopped: Boolean = false
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
+        /* Recorder */
+        output = Environment.getExternalStorageDirectory().absolutePath + "/recording.wav"
+        Log.i("absolutePath",Environment.getExternalStorageDirectory().absolutePath)
+        mediaRecorder = MediaRecorder()
+
+        mediaRecorder?.setAudioSource(MediaRecorder.AudioSource.MIC)
+        mediaRecorder?.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
+        mediaRecorder?.setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
+        mediaRecorder?.setOutputFile(output)
+
         frequencyBar = findViewById(R.id.seekBar)
         frequencyLabel = findViewById(R.id.textView)
         button = findViewById(R.id.playPause)
@@ -91,6 +123,16 @@ class MainActivity : AppCompatActivity() {
         modeSwitch?.setOnCheckedChangeListener { _, isChecked ->
             this.sawMode = isChecked
         }
+
+        /* Recorder */
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(this,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            val permissions = arrayOf(android.Manifest.permission.RECORD_AUDIO, android.Manifest.permission.WRITE_EXTERNAL_STORAGE, android.Manifest.permission.READ_EXTERNAL_STORAGE)
+            ActivityCompat.requestPermissions(this, permissions,0)
+        }
+
+
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -135,10 +177,26 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun onPlayPauseTap(view: View) {
+        if(ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(this,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            val permissions = arrayOf(android.Manifest.permission.RECORD_AUDIO, android.Manifest.permission.WRITE_EXTERNAL_STORAGE, android.Manifest.permission.READ_EXTERNAL_STORAGE)
+            ActivityCompat.requestPermissions(this, permissions,0)
+        }
+
         if (!isRunning) {
             isRunning = true
-            button?.text = "Pause"
-            play()
+            //button?.text = "Pause"
+            button?.text = "Play"
+            startRecording()
+            val timer = Timer("schedule", true)
+            timer.schedule(50){
+                Log.i("Delay","50ms, for compensating HW delay")
+                play()
+            }
+            timer.schedule(150){
+                Log.i("Delay","150ms, we need to cut down rest[2~140ms]")
+                stopRecording()
+            }
         } else {
             isRunning = false
             button?.text = "Play"
@@ -155,13 +213,14 @@ class MainActivity : AppCompatActivity() {
 
                 // start audio
                 audioTrack.play()
-                // synthesis loop
-                while (isRunning) {
+                Log.i("Play","Start playing")
+                if(isRunning){
                     fillblock()
+                    isRunning = false
                 }
                 audioTrack.stop()
             }
-
+            var orfr = fr
             /**
              * This methods fills the buffer
              */
@@ -176,17 +235,55 @@ class MainActivity : AppCompatActivity() {
                         val saw4 = (saw3 - (1/4.0) * amp * sin(4*ph)).toShort()
                         samples[i] = saw4
                     } else {
+
                         // sine wave
                         samples[i] = (amp * sin(ph)).toShort()
                     }
-
-                    ph += twopi * fr / sr
-
+                    /* Frequency Sweep
+                    * 100Hz / 32samples -> 800Hz sweep
+                    * 100Hz / 16samples -> 1600Hz sweep
+                    * 100Hz / 8samples -> 3200Hz sweep
+                    * */
+                    if (i%16==0){
+                        fr+=1000.0
+                    }
+                    //ph += twopi * fr / sr
+                    ph = twopi * fr * i / sr
                 }
                 audioTrack.write(samples, 0, buffsize)
+
+                // return to original frequency
+                fr = orfr
+                Log.i("Play","Finish playing")
+                val timer = Timer("schedule", true)
             }
+
         }
         t?.start()
     }
 
+    private fun startRecording(){
+        try {
+            mediaRecorder?.prepare()
+            mediaRecorder?.start()
+            state = true
+            Log.i("Record","start recording")
+            Toast.makeText(this, "Recording started!", Toast.LENGTH_SHORT).show()
+        } catch (e: IllegalStateException) {
+            e.printStackTrace()
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }
+    }
+
+    private fun stopRecording(){
+        if(state){
+            mediaRecorder?.stop()
+            mediaRecorder?.release()
+            state = false
+            Log.i("Record","stop recording")
+        }else{
+            //Toast.makeText(this, "You are not recording right now!", Toast.LENGTH_SHORT).show()
+        }
+    }
 }
