@@ -2,6 +2,8 @@
 This repository contains the kotlin code for research project "Detective Echo" conducted during 2019 Fall, in CS442.
 
 # Configurations
+Default variables for the sound synthesis
+var sawMode = false
 --- Default variables for the sound synthesis ---
 var sawMode = false
 var t: Thread? = null
