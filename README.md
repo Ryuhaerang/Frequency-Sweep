@@ -3,14 +3,14 @@ This repository contains the kotlin code for research project "Detective Echo" c
 
 # Configurations
 --- Default variables for the sound synthesis ---
-    var sawMode = false
-    var t: Thread? = null
-    var isRunning = false
-    val sr = 44100              // maximum frequency
-    val twopi = 2 * Math.PI
-    var amp = 10000             // amplitude
-    var fr = 10000.0            // frequency
-    var ph = 0.0                // phase
+var sawMode = false
+var t: Thread? = null
+var isRunning = false
+val sr = 44100              // maximum frequency
+val twopi = 2 * Math.PI
+var amp = 10000             // amplitude
+var fr = 10000.0            // frequency
+var ph = 0.0                // phase
 
 # App feature
 There are several GUI. 
