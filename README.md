@@ -2,8 +2,7 @@
 This repository contains the kotlin code for research project "Detective Echo" conducted during 2019 Fall, in CS442.
 
 # Configurations
-Default variables for the sound synthesis
-var sawMode = false
+```
 --- Default variables for the sound synthesis ---
 var sawMode = false
 var t: Thread? = null
@@ -13,6 +12,7 @@ val twopi = 2 * Math.PI
 var amp = 10000             // amplitude
 var fr = 10000.0            // frequency
 var ph = 0.0                // phase
+```
 
 # App feature
 There are several GUI. 
